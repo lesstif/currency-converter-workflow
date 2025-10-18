@@ -8,6 +8,10 @@ function envVar(varName) {
     .objectForKey(varName).js
 }
 
+function findMissing(arrayA, arrayB) {
+  return [...new Set(arrayA.filter(itemA => !arrayB.includes(itemA)))]
+}
+
 function matchCurrencies(searchWord, currencies) {
   const matchingCurrencies = Object.keys(currencies).map(currencyCode => {
     if (currencyCode.toLowerCase().startsWith(searchWord)) return [currencyCode, currencies[currencyCode]]
@@ -214,15 +218,19 @@ function fetchRates(ratesURL, ratesFile) {
     ZWL: "Zimbabwean Dollar"
   }
 
+  const currenciesCodes = Object.keys(currencies)
+  const currencyNamesCodes = Object.keys(currencyNames)
+
+  // Check for extraneous or missing currencies
+  const extraneousCurrencies = findMissing(currencyNamesCodes, currenciesCodes)
+  const missingCurrencies = findMissing(currenciesCodes, currencyNamesCodes)
+
+  if (extraneousCurrencies.length > 0) throw `Extraneous currencies: ${extraneousCurrencies.join(", ")}`
+  if (missingCurrencies.length > 0) throw `Missing currencies: ${missingCurrencies.join(", ")}`
+
   // Transform new object for searching
-  const unorderedRatesObj = Object.keys(currencies).reduce((allCurrencies, currentCurrency) => {
-    const currencyName = currencyNames[currentCurrency]
-
-    // Abort if missing currency name
-    if (!currencyName) throw `Missing currency: ${currentCurrency}`
-
-    // Process currency
-    const splitName = currencyName.split(" ")
+  const unorderedRatesObj = currenciesCodes.reduce((allCurrencies, currentCurrency) => {
+    const splitName = currencyNames[currentCurrency].split(" ")
 
     allCurrencies[currentCurrency] = {
       rate: currencies[currentCurrency],
@@ -282,7 +290,8 @@ function run(argv) {
 
   // Get matches when starting currency specified
   const startCurrencies = matchCurrencies(originCurrency, currencies)
-  const startMatchCount = Object.keys(startCurrencies).length
+  const startCurrenciesCodes = Object.keys(startCurrencies)
+  const startMatchCount = startCurrenciesCodes.length
 
   // When no starting currencies match, ask for corrections
   if (startMatchCount === 0) return JSON.stringify({ items: [{
@@ -292,7 +301,7 @@ function run(argv) {
   }]})
 
   // When multiple starting currencies match, narrow with autocomplete
-  if (startMatchCount > 1) return JSON.stringify({ items: Object.keys(startCurrencies).map(currencyCode => ({
+  if (startMatchCount > 1) return JSON.stringify({ items: startCurrenciesCodes.map(currencyCode => ({
     uid: currencyCode,
     title: `${numberValue} ${currencyCode}`,
     subtitle: `${currencies[currencyCode].country} ${currencies[currencyCode].coin}`,
@@ -302,7 +311,7 @@ function run(argv) {
   }))})
 
   // When only one currency matches, convert
-  const startCurrencyCode = Object.keys(startCurrencies)[0]
+  const startCurrencyCode = startCurrenciesCodes[0]
   const endCurrencies = matchCurrencies(targetCurrency, currencies)
 
   return JSON.stringify({ items: Object.keys(endCurrencies).flatMap(currencyCode => {

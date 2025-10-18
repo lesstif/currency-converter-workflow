@@ -214,7 +214,13 @@ function fetchRates(ratesURL, ratesFile) {
 
   // Transform new object for searching
   const unorderedRatesObj = Object.keys(currencies).reduce((allCurrencies, currentCurrency) => {
-    const splitName = currencyNames[currentCurrency].split(" ")
+    const currencyName = currencyNames[currentCurrency]
+
+    // Abort if missing currency name
+    if (!currencyName) throw `Missing currency: ${currentCurrency}`
+
+    // Process currency
+    const splitName = currencyName.split(" ")
 
     allCurrencies[currentCurrency] = {
       rate: currencies[currentCurrency],

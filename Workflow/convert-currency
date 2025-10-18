@@ -267,7 +267,7 @@ function run(argv) {
     uid: currencyCode,
     title: `${numberValue} ${currencyCode}`,
     subtitle: `${currencies[currencyCode].country} ${currencies[currencyCode].coin}`,
-     autocomplete: `${numberValue} ${currencyCode} to `,
+    autocomplete: `${numberValue} ${currencyCode} to `,
     valid: false,
     icon: { path: `images/flags/${currencyCode}.png` }
   }))})

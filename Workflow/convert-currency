@@ -215,6 +215,7 @@ function fetchRates(ratesURL, ratesFile) {
     YER: "Yemeni Rial",
     ZAR: "South African Rand",
     ZMW: "Zambian Kwacha",
+    ZWG: "Zimbabwean ZiG",
     ZWL: "Zimbabwean Dollar"
   }
 

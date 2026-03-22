@@ -262,13 +262,16 @@ function run(argv) {
   formatter.numberStyle = $.NSNumberFormatterDecimalStyle
   formatter.minmumFractionDigits = 0
   formatter.maximumFractionDigits = 2
-  formatter.hasThousandSeparators = envVar("thousands_group") === "1"
+  formatter.hasThousandSeparators = true
 
   const interpretedInput = argv[0].replace(/ (to|in|as) /i, " ").toLowerCase()
-  const rawNumber = interpretedInput.replace(/^(\d*(\.\d+)?)\D*/, "$1")
+  const rawNumber = interpretedInput.match(/^[\d,]*\.?\d*[kmbt]?/)?.[0] || ""
   const rawOperation = interpretedInput.substring(rawNumber.length).trim()
 	const splitOperation = rawOperation.split(" ")
-  const numberValue = parseFloat(rawNumber)
+  const suffixMultipliers = { k: 1e3, m: 1e6, b: 1e9, t: 1e12 }
+  const suffix = rawNumber.slice(-1)
+  const numberValue = parseFloat(rawNumber.replace(/,/g, "").replace(/[kmbt]$/, "")) * (suffixMultipliers[suffix] || 1)
+  const formattedNumberValue = formatter.stringFromNumber(numberValue).js
   const originCurrency = splitOperation[0] || ""
   const targetCurrency = splitOperation[1] || ""
 
@@ -282,9 +285,9 @@ function run(argv) {
   // When no starting currencies specified, show them all
   if (originCurrency.length === 0) return JSON.stringify({ items: Object.keys(currencies).map(currencyCode => ({
     uid: currencyCode,
-    title: `${numberValue} ${currencyCode}`,
+    title: `${formattedNumberValue} ${currencyCode}`,
     subtitle: `${currencies[currencyCode].country} ${currencies[currencyCode].coin}`,
-    autocomplete: `${numberValue} ${currencyCode} to `,
+    autocomplete: `${formattedNumberValue} ${currencyCode} to `,
     valid: false,
     icon: { path: `images/flags/${currencyCode}.png` }
   }))})
@@ -297,16 +300,16 @@ function run(argv) {
   // When no starting currencies match, ask for corrections
   if (startMatchCount === 0) return JSON.stringify({ items: [{
     title: "Input a Valid Currency",
-    subtitle: "Examples: EUR, GBP, USD",
+    subtitle: "Examples: EUR, GBP, USD, KRW",
     valid: false
   }]})
 
   // When multiple starting currencies match, narrow with autocomplete
   if (startMatchCount > 1) return JSON.stringify({ items: startCurrenciesCodes.map(currencyCode => ({
     uid: currencyCode,
-    title: `${numberValue} ${currencyCode}`,
+    title: `${formattedNumberValue} ${currencyCode}`,
     subtitle: `${currencies[currencyCode].country} ${currencies[currencyCode].coin}`,
-    autocomplete: `${numberValue} ${currencyCode} to `,
+    autocomplete: `${formattedNumberValue} ${currencyCode} to `,
     valid: false,
     icon: { path: `images/flags/${currencyCode}.png` }
   }))})
@@ -325,7 +328,7 @@ function run(argv) {
       title: `${formattedValue} ${currencyCode}`,
       subtitle: `${startCurrencies[startCurrencyCode].country} ${startCurrencies[startCurrencyCode].coin} → ${currencies[currencyCode].country} ${currencies[currencyCode].coin}`,
       arg: formattedValue,
-      autocomplete: `${numberValue} ${startCurrencyCode} to ${currencyCode}`,
+      autocomplete: `${formattedNumberValue} ${startCurrencyCode} to ${currencyCode}`,
       icon: { path: `images/flags/${currencyCode}.png` }
     }
   })})

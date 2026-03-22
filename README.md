@@ -30,3 +30,13 @@ Configure the [Hotkey](https://www.alfredapp.com/help/workflows/triggers/hotkey/
 ![Universal Action](Workflow/images/about/ua.png)
 
 Rates provided by [Exchange Rate API](https://www.exchangerate-api.com).
+
+## Building
+
+To package the workflow for distribution:
+
+```sh
+cd Workflow && zip -r ../CurrencyConverter.alfredworkflow . --exclude "*/.DS_Store"
+```
+
+The resulting `CurrencyConverter.alfredworkflow` can be double-clicked to install into Alfred.

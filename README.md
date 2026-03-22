@@ -8,6 +8,9 @@ Convert between different currencies
 
 Convert currencies via the `cur` keyword. Type a number to see all available currencies with their full name and code.
 
+![Typing a number](Workflow/images/about/comma-and-number-abbreviation.jpg)
+Type a currency code or name with comma separots and number abbreviations
+
 ![Typing a number](Workflow/images/about/number.png)
 
 Type a currency code or name to filter.
